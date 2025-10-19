@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // 🚨 PERINGATAN: GANTI PLACEHOLDER INI DENGAN KUNCI GEMINI API ANDA YANG SEBENARNYA!
 // Menyimpan kunci secara langsung di file SANGAT TIDAK AMAN.
-const apiKey = "YOUR_ACTUAL_GEMINI_API_KEY_HERE"; 
+const apiKey = "AIzaSyBD22OZdh4V0ypkIj2DfG1wHcY_6KYLcCU"; 
 
 export default async function handler(req, res) {
     // 1. Pemeriksaan Metode dan API Key
