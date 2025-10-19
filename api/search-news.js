@@ -1,22 +1,34 @@
 // Install library: npm install @google/genai
 import { GoogleGenAI } from "@google/genai";
 
-// Mengambil API Key dari Environment Variable Vercel (PENTING!)
+// Pastikan Vercel telah mengatur process.env.GEMINI_API_KEY
 // Kunci ini tidak akan pernah terekspos ke sisi klien/browser
-const ai = new GoogleGenAI(process.env.GEMINI_API_KEY);
+const apiKey = process.env.GEMINI_API_KEY;
+
+// Inisialisasi GoogleGenAI, hanya jika API Key tersedia
+let ai = null;
+if (apiKey) {
+    ai = new GoogleGenAI(apiKey);
+}
 
 // Fungsi handler untuk Serverless Function Vercel
 export default async function handler(req, res) {
-    // Memastikan hanya menerima metode POST dari frontend
+    // 1. Pemeriksaan Metode
     if (req.method !== 'POST') {
-        // Status 405 Method Not Allowed
         return res.status(405).json({ message: 'Method Not Allowed' });
     }
 
+    // 2. Pemeriksaan API Key (Awal)
+    if (!apiKey || !ai) {
+        return res.status(500).json({ 
+            message: 'Internal Server Error: GEMINI_API_KEY tidak ditemukan. Harap atur di Environment Variables Vercel.',
+            details: 'Authentication failed.'
+        });
+    }
+
+    // 3. Pemeriksaan Query
     const { query } = req.body;
-    
     if (!query) {
-        // Status 400 Bad Request
         return res.status(400).json({ message: 'Missing query parameter in request body.' });
     }
     
@@ -35,7 +47,6 @@ export default async function handler(req, res) {
         });
 
         // Mengembalikan teks hasil AI ke frontend
-        // Status 200 OK
         res.status(200).json({ 
             result: response.text 
         });
@@ -43,12 +54,15 @@ export default async function handler(req, res) {
     } catch (error) {
         console.error("Gemini API Error:", error);
         
+        // Menangkap error spesifik dari API seperti kunci tidak valid atau kuota habis
         let errorMessage = "Internal Server Error saat memproses AI.";
         if (error.message.includes('API key is not valid')) {
-             errorMessage = "API Key Gemini tidak valid atau belum diatur di Environment Variable Vercel.";
+             errorMessage = "API Key Gemini tidak valid. Cek Environment Variables Anda.";
+        } else if (error.message.includes('quota')) {
+             errorMessage = "Kuota API Gemini habis atau dibatasi. Cek penggunaan di Google AI Studio.";
         }
 
-        // Status 500 Internal Server Error
+
         res.status(500).json({ 
             message: errorMessage,
             details: error.message 
