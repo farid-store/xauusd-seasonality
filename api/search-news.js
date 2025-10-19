@@ -1,20 +1,20 @@
 // api/search-news.js
 import { GoogleGenerativeAI } from '@google/generative-ai';
-// Hapus import 'formidable' dan 'fs' karena tidak diperlukan untuk pencarian teks sederhana
 
-// Kunci ini hanya akan tersedia di lingkungan Vercel
-const apiKey = process.env.GEMINI_API_KEY;
+// 🚨 PERINGATAN KEAMANAN TINGGI 🚨
+// Ini adalah cara yang SANGAT TIDAK AMAN. Ganti nilai ini dengan API Key Anda yang sebenarnya.
+const apiKey = "AIzaSyBD22OZdh4V0ypkIj2DfG1wHcY_6KYLcCU"; // GANTI INI!
 
 export default async function handler(req, res) {
-    // 1. Pemeriksaan Metode dan API Key (PENTING!)
+    // 1. Pemeriksaan Metode dan API Key
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method Not Allowed' });
     }
     
-    if (!apiKey) {
-        // Jika kunci API TIDAK ADA, segera kembalikan error 500
+    // Pesan error diubah untuk mencerminkan kunci lokal yang hilang
+    if (!apiKey || apiKey === "YOUR_ACTUAL_GEMINI_API_KEY_HERE") {
         return res.status(500).json({ 
-            message: 'Internal Server Error: GEMINI_API_KEY tidak ditemukan. Harap atur di Environment Variables Vercel.',
+            message: 'Internal Server Error: API Key tidak valid. Harap ganti nilai apiKey di dalam file.',
             details: 'Authentication failed.'
         });
     }
@@ -34,8 +34,12 @@ export default async function handler(req, res) {
     Sertakan poin-poin utama dan prediksi ringkas. Jawablah dalam Bahasa Indonesia.`;
 
     try {
+        // Mengaktifkan Google Search untuk Grounding (Mendapatkan Berita Terbaru)
         const response = await model.generateContent({
-            contents: prompt // Mengirim prompt sebagai string
+            contents: prompt,
+            config: {
+                tools: [{ googleSearch: {} }], // PENTING: Mengaktifkan Google Search
+            }
         });
 
         res.status(200).json({ 
@@ -47,7 +51,7 @@ export default async function handler(req, res) {
         
         let errorMessage = "Internal Server Error saat memproses AI.";
         if (error.message.includes('API key is not valid')) {
-             errorMessage = "API Key Gemini tidak valid. Cek Vercel Environment Variables.";
+             errorMessage = "API Key Gemini tidak valid. Cek nilai variabel 'apiKey'.";
         } else if (error.message.includes('quota')) {
              errorMessage = "Kuota API Gemini habis. Hubungi Google AI.";
         }
