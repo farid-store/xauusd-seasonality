@@ -1,9 +1,9 @@
 // api/search-news.js
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// 🚨 PERINGATAN KEAMANAN TINGGI 🚨
-// Ini adalah cara yang SANGAT TIDAK AMAN. Ganti nilai ini dengan API Key Anda yang sebenarnya.
-const apiKey = "AIzaSyBD22OZdh4V0ypkIj2DfG1wHcY_6KYLcCU"; // GANTI INI!
+// 🚨 PERINGATAN: GANTI PLACEHOLDER INI DENGAN KUNCI GEMINI API ANDA YANG SEBENARNYA!
+// Menyimpan kunci secara langsung di file SANGAT TIDAK AMAN.
+const apiKey = "YOUR_ACTUAL_GEMINI_API_KEY_HERE"; 
 
 export default async function handler(req, res) {
     // 1. Pemeriksaan Metode dan API Key
@@ -11,11 +11,12 @@ export default async function handler(req, res) {
         return res.status(405).json({ message: 'Method Not Allowed' });
     }
     
-    // Pesan error diubah untuk mencerminkan kunci lokal yang hilang
+    // Pengecekan Kunci Inline
     if (!apiKey || apiKey === "YOUR_ACTUAL_GEMINI_API_KEY_HERE") {
+        // Pesan error diubah untuk mencerminkan masalah kunci hardcoded
         return res.status(500).json({ 
-            message: 'Internal Server Error: API Key tidak valid. Harap ganti nilai apiKey di dalam file.',
-            details: 'Authentication failed.'
+            message: 'Internal Server Error: API Key Gemini tidak ditemukan atau tidak valid. Harap ganti placeholder "YOUR_ACTUAL_GEMINI_API_KEY_HERE" di file api/search-news.js.',
+            details: 'Authentication failed due to missing or placeholder API Key.'
         });
     }
     
@@ -49,11 +50,12 @@ export default async function handler(req, res) {
     } catch (error) {
         console.error("Gemini API Error:", error);
         
+        // Logika error handling disederhanakan
         let errorMessage = "Internal Server Error saat memproses AI.";
         if (error.message.includes('API key is not valid')) {
-             errorMessage = "API Key Gemini tidak valid. Cek nilai variabel 'apiKey'.";
+             errorMessage = "API Key Gemini tidak valid. Cek nilai variabel 'apiKey' di file.";
         } else if (error.message.includes('quota')) {
-             errorMessage = "Kuota API Gemini habis. Hubungi Google AI.";
+             errorMessage = "Kuota API Gemini habis.";
         }
 
         res.status(500).json({ 
